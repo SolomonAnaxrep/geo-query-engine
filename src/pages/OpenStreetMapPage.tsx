@@ -31,6 +31,7 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
   const [viewboxMaxLon, setViewboxMaxLon] = useState('');
   const [viewboxMaxLat, setViewboxMaxLat] = useState('');
   const [bounded, setBounded] = useState(false);
+  const [addressdetails, setAddressdetails] = useState(true);
   const [extratags, setExtratags] = useState(true);
   const [namedetails, setNamedetails] = useState(false);
   const [acceptLanguage, setAcceptLanguage] = useState('');
@@ -40,11 +41,13 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
   const [zoom, setZoom] = useState('18');
+  const [reverseAddressdetails, setReverseAddressdetails] = useState(true);
   const [reverseAcceptLanguage, setReverseAcceptLanguage] = useState('');
   const [reverseEmail, setReverseEmail] = useState('');
   
   // Lookup mode fields
   const [osmIds, setOsmIds] = useState('');
+  const [lookupAddressdetails, setLookupAddressdetails] = useState(true);
   const [lookupAcceptLanguage, setLookupAcceptLanguage] = useState('');
   const [lookupEmail, setLookupEmail] = useState('');
   
@@ -75,6 +78,7 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
     setViewboxMaxLon('');
     setViewboxMaxLat('');
     setBounded(false);
+    setAddressdetails(true);
     setAcceptLanguage('');
     setEmail('');
     
@@ -82,11 +86,13 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
     setLat('');
     setLon('');
     setZoom('18');
+    setReverseAddressdetails(true);
     setReverseAcceptLanguage('');
     setReverseEmail('');
     
     // Clear lookup mode fields
     setOsmIds('');
+    setLookupAddressdetails(true);
     setLookupAcceptLanguage('');
     setLookupEmail('');
   };
@@ -137,7 +143,7 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
         }
         
         params.append('format', 'jsonv2');
-        params.append('addressdetails', '1');
+        if (addressdetails) params.append('addressdetails', '1');
         if (extratags) params.append('extratags', '1');
         if (namedetails) params.append('namedetails', '1');
         params.append('limit', limit.trim() || '10');
@@ -158,7 +164,7 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
         params.append('lon', lon.trim());
         params.append('zoom', zoom.trim() || '18');
         params.append('format', 'jsonv2');
-        params.append('addressdetails', '1');
+        if (reverseAddressdetails) params.append('addressdetails', '1');
         if (reverseAcceptLanguage.trim()) params.append('accept-language', reverseAcceptLanguage.trim());
         if (reverseEmail.trim()) params.append('email', reverseEmail.trim());
         
@@ -173,7 +179,7 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
         
         params.append('osm_ids', osmIds.trim());
         params.append('format', 'jsonv2');
-        params.append('addressdetails', '1');
+        if (lookupAddressdetails) params.append('addressdetails', '1');
         if (lookupAcceptLanguage.trim()) params.append('accept-language', lookupAcceptLanguage.trim());
         if (lookupEmail.trim()) params.append('email', lookupEmail.trim());
         
@@ -485,6 +491,17 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
               <input
                 type="checkbox"
+                checked={addressdetails}
+                onChange={(e) => setAddressdetails(e.target.checked)}
+              />
+              <span>Address Details (include address breakdown: street, city, postcode, etc.)</span>
+            </label>
+          </div>
+          
+          <div className="form-group">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
                 checked={extratags}
                 onChange={(e) => setExtratags(e.target.checked)}
               />
@@ -579,6 +596,17 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
           </div>
           
           <div className="form-group">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={reverseAddressdetails}
+                onChange={(e) => setReverseAddressdetails(e.target.checked)}
+              />
+              <span>Address Details (include address breakdown: street, city, postcode, etc.)</span>
+            </label>
+          </div>
+          
+          <div className="form-group">
             <label htmlFor="reverseAcceptLanguage">Accept Language</label>
             <input
               type="text"
@@ -620,6 +648,17 @@ export function OpenStreetMapPage({ onBack }: OpenStreetMapPageProps) {
               onChange={(e) => setOsmIds(e.target.value)}
             />
             <small>Comma-separated OSM IDs with type prefix (R=relation, W=way, N=node)</small>
+          </div>
+          
+          <div className="form-group">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={lookupAddressdetails}
+                onChange={(e) => setLookupAddressdetails(e.target.checked)}
+              />
+              <span>Address Details (include address breakdown: street, city, postcode, etc.)</span>
+            </label>
           </div>
           
           <div className="form-group">
