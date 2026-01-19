@@ -5,9 +5,14 @@ interface ZippopotomusPageProps {
   onBack: () => void;
 }
 
+type SearchMode = 'postal' | 'city';
+
 export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
+  const [searchMode, setSearchMode] = useState<SearchMode>('postal');
   const [countryCode, setCountryCode] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<ZippopotamusResponse | null>(null);
@@ -16,18 +21,32 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
     e.preventDefault();
     
     const country = countryCode.trim().toUpperCase();
-    const postal = postalCode.trim();
-    
-    if (!country || !postal) {
-      return;
-    }
     
     setLoading(true);
     setError(null);
     setResults(null);
     
     try {
-      const url = `https://api.zippopotam.us/${country}/${postal}`;
+      let url: string;
+      
+      if (searchMode === 'postal') {
+        const postal = postalCode.trim();
+        if (!country || !postal) {
+          setLoading(false);
+          return;
+        }
+        url = `https://api.zippopotam.us/${country}/${postal}`;
+      } else {
+        const stateCode = state.trim();
+        const cityName = city.trim();
+        if (!country || !stateCode || !cityName) {
+          setLoading(false);
+          return;
+        }
+        // URL encode the city name to handle spaces and special characters
+        url = `https://api.zippopotam.us/${country}/${encodeURIComponent(stateCode)}/${encodeURIComponent(cityName)}`;
+      }
+      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -40,7 +59,7 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
       setError(
         err instanceof Error 
           ? err.message 
-          : 'Failed to fetch data. Please check the country code and postal code.'
+          : 'Failed to fetch data. Please check your input values.'
       );
     } finally {
       setLoading(false);
@@ -52,6 +71,31 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
       <h1>Zippopotomus</h1>
       <div className="service-content">
         <p className="description">Query postal codes and zip codes from over 60 countries.</p>
+        
+        <div className="search-mode-toggle">
+          <button
+            type="button"
+            className={`mode-btn ${searchMode === 'postal' ? 'active' : ''}`}
+            onClick={() => {
+              setSearchMode('postal');
+              setError(null);
+              setResults(null);
+            }}
+          >
+            Search by Postal Code
+          </button>
+          <button
+            type="button"
+            className={`mode-btn ${searchMode === 'city' ? 'active' : ''}`}
+            onClick={() => {
+              setSearchMode('city');
+              setError(null);
+              setResults(null);
+            }}
+          >
+            Search by City
+          </button>
+        </div>
         
         <form id="zippopotomus-form" className="query-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -71,19 +115,51 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
             <small>Two-letter country code (e.g., US, DE, FR, GB)</small>
           </div>
           
-          <div className="form-group">
-            <label htmlFor="postal-code">Postal Code</label>
-            <input
-              type="text"
-              id="postal-code"
-              name="postal-code"
-              placeholder="e.g., 90210"
-              required
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-            />
-            <small>Enter the postal/zip code to look up</small>
-          </div>
+          {searchMode === 'postal' ? (
+            <div className="form-group">
+              <label htmlFor="postal-code">Postal Code</label>
+              <input
+                type="text"
+                id="postal-code"
+                name="postal-code"
+                placeholder="e.g., 90210"
+                required
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+              />
+              <small>Enter the postal/zip code to look up</small>
+            </div>
+          ) : (
+            <>
+              <div className="form-group">
+                <label htmlFor="state">State/Province Code</label>
+                <input
+                  type="text"
+                  id="state"
+                  name="state"
+                  placeholder="e.g., MA, CA, NY"
+                  required
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                />
+                <small>State abbreviation or province code (e.g., MA for Massachusetts)</small>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="city">City Name</label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  placeholder="e.g., Boston, Belmont"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+                <small>Enter the city name to find postal codes</small>
+              </div>
+            </>
+          )}
           
           <button type="submit" className="query-btn">Query</button>
         </form>
@@ -108,7 +184,15 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
               <h2>Results</h2>
             </div>
             <div className="results-summary">
-              <p><strong>Postal Code:</strong> {results['post code'] || 'N/A'}</p>
+              {searchMode === 'postal' && (
+                <p><strong>Postal Code:</strong> {results['post code'] || 'N/A'}</p>
+              )}
+              {searchMode === 'city' && results.places && results.places.length > 0 && (
+                <p>
+                  <strong>Found {results.places.length} location{results.places.length !== 1 ? 's' : ''}</strong>
+                  {results['post code'] && ` with postal code${results.places.length > 1 ? 's' : ''}: ${results['post code']}`}
+                </p>
+              )}
               <p>
                 <strong>Country:</strong> {results.country || 'N/A'}{' '}
                 {results['country abbreviation'] && `(${results['country abbreviation']})`}
@@ -120,8 +204,19 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
                 <div className="places-grid">
                   {results.places.map((place, index) => (
                     <div key={index} className="place-card">
-                      <h3>{place['place name'] || 'N/A'}</h3>
+                      <h3>
+                        {searchMode === 'city' 
+                          ? (place['post code'] || 'N/A')
+                          : (place['place name'] || 'N/A')
+                        }
+                      </h3>
                       <div className="place-details">
+                        {searchMode === 'city' && (
+                          <p><strong>Place Name:</strong> {place['place name'] || 'N/A'}</p>
+                        )}
+                        {searchMode === 'postal' && place['post code'] && (
+                          <p><strong>Postal Code:</strong> {place['post code']}</p>
+                        )}
                         {place.state && (
                           <p>
                             <strong>State:</strong> {place.state}
@@ -140,7 +235,7 @@ export function ZippopotomusPage({ onBack }: ZippopotomusPageProps) {
                 </div>
               </div>
             ) : (
-              <p>No places found for this postal code.</p>
+              <p>No places found{searchMode === 'postal' ? ' for this postal code' : ' for this location'}.</p>
             )}
           </div>
         )}

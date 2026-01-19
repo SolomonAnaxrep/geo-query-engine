@@ -136,6 +136,47 @@ h2 {
   margin-bottom: 30px;
 }
 
+.search-mode-toggle {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 10px 20px;
+  font-size: 0.95em;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 160px;
+  max-width: 250px;
+}
+
+.mode-btn:hover {
+  background: #f0f0ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.mode-btn.active:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #653a91 100%);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
 .query-form {
   background: #f8f9fa;
   padding: 30px;

@@ -6,6 +6,7 @@ export interface ZippopotamusPlace {
   latitude: string;
   state: string;
   'state abbreviation': string;
+  'post code': string;
 }
 
 export interface ZippopotamusResponse {
